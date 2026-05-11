@@ -1,73 +1,71 @@
-Ecco un README dettagliato per il tuo progetto:
+# Natural Language to SQL Translator
 
-# Progetto Finale: Natural Language to SQL Translator
+This project is a full-stack web application that translates natural language questions into SQL queries, allowing users to query a movie database intuitively. The application is built with a microservices architecture, containerized with Docker.
 
-Questo progetto è un'applicazione web full-stack che traduce le domande in linguaggio naturale in query SQL, consentendo agli utenti di interrogare un database cinematografico in modo intuitivo. L'applicazione è costruita con un'architettura a microservizi, containerizzata con Docker.
+## Features
 
-## Funzionalità
+* **Natural Language to SQL Translation**: Enter a question in English (e.g., "Show me Christopher Nolan's films") and the application will convert it into an executable SQL query.
+* **Direct SQL Execution**: Run `SELECT` queries directly on the database for testing or advanced analysis.
+* **Schema Visualization**: Inspect the database schema to view available tables and columns.
+* **Data Entry**: Insert new data into the database through a simple form.
+* **Intuitive Web Interface**: A modern, responsive frontend to interact with all features.
 
-  * **Traduzione da Linguaggio Naturale a SQL**: Inserisci una domanda in italiano (es. "Mostrami i film di Christopher Nolan") e l'applicazione la convertirà in una query SQL eseguibile.
-  * **Esecuzione Diretta di SQL**: Esegui direttamente query `SELECT` sul database per test o analisi avanzate.
-  * **Visualizzazione dello Schema**: Ispeziona lo schema del database per vedere le tabelle e le colonne disponibili.
-  * **Aggiunta di Dati**: Inserisci nuovi dati nel database attraverso un semplice form.
-  * **Interfaccia Web Intuitiva**: Un frontend moderno e reattivo per interagire con tutte le funzionalità.
+## Architecture
 
-## Architettura
+The project uses a microservices architecture, where each component is an independent service running in its own Docker container:
 
-Il progetto utilizza un'architettura a microservizi, dove ogni componente è un servizio indipendente eseguito nel proprio container Docker:
+* **Frontend**: A web application built with FastAPI that serves the HTML, CSS, and JavaScript user interface. It communicates with the backend service via HTTP requests.
+* **Backend**: A FastAPI API that handles the business logic. It receives requests from the frontend, interacts with the database, and communicates with the Ollama service for SQL translation.
+* **Database**: A MariaDB instance that stores the movie data.
+* **Ollama**: A service that runs a large language model (LLM) to translate natural language into SQL.
+* **Tester**: A dedicated service for running automated tests on the backend.
 
-  * **Frontend**: Un'applicazione web costruita con FastAPI che serve l'interfaccia utente HTML, CSS e JavaScript. Comunica con il servizio di backend tramite richieste HTTP.
-  * **Backend**: Un'API FastAPI che gestisce la logica di business. Riceve le richieste dal frontend, interagisce con il database e con il servizio Ollama per la traduzione in SQL.
-  * **Database**: Un'istanza di MariaDB che memorizza i dati cinematografici.
-  * **Ollama**: Un servizio che esegue un modello di linguaggio di grandi dimensioni (LLM) per tradurre il linguaggio naturale in SQL.
-  * **Tester**: Un servizio dedicato per eseguire i test automatici sul backend.
+## Tech Stack
 
-## Stack Tecnologico
+* **Backend**: Python, FastAPI, MariaDB Connector, Pydantic, Poetry
+* **Frontend**: Python, FastAPI, Jinja2, HTML5, CSS3
+* **NLU Translation**: Ollama with the `gemma3:1b-it-qat` model
+* **Database**: MariaDB
+* **Containerization**: Docker, Docker Compose
 
-  * **Backend**: Python, FastAPI, MariaDB Connector, Pydantic, Poetry
-  * **Frontend**: Python, FastAPI, Jinja2, HTML5, CSS3
-  * **Traduzione NLU**: Ollama con il modello `gemma3:1b-it-qat`
-  * **Database**: MariaDB
-  * **Containerizzazione**: Docker, Docker Compose
+## Prerequisites
 
-## Prerequisiti
+* [Docker](https://docs.docker.com/get-docker/)
+* [Docker Compose](https://docs.docker.com/compose/install/)
 
-  * [Docker](https://docs.docker.com/get-docker/)
-  * [Docker Compose](https://docs.docker.com/compose/install/)
+## Installation Guide
 
-## Guida all'Installazione
+1. **Clone the Repository**
 
-1.  **Clona il Repository**
+   ```bash
+   git clone https://github.com/your-username/final-project.git
+   cd final-project
+   ```
 
-    ```bash
-    git clone https://github.com/tuo-utente/progetto-finale.git
-    cd progetto-finale
-    ```
+2. **Start the Services with Docker Compose**
 
-2.  **Avvia i Servizi con Docker Compose**
+   Run the following command from the project root directory:
 
-    Esegui il seguente comando dalla directory principale del progetto:
+   ```bash
+   docker-compose up --build
+   ```
 
-    ```bash
-    docker-compose up --build
-    ```
+   This command will build the Docker images for each service (if they don't already exist) and start all containers. The first startup may take some time, as Ollama will need to download the LLM model.
 
-    Questo comando costruirà le immagini Docker per ogni servizio (se non esistono già) e avvierà tutti i container. Potrebbe essere necessario un po' di tempo al primo avvio, poiché Ollama scaricherà il modello LLM.
+3. **Access the Application**
 
-3.  **Accedi all'Applicazione**
+   Open your web browser and navigate to `http://localhost:8080`.
 
-    Apri il tuo browser web e vai a `http://localhost:8080`.
+## Usage
 
-## Utilizzo
+The web interface is divided into several sections:
 
-L'interfaccia web è suddivisa in diverse sezioni:
+* **Search with Natural Language**: Enter your question and click "Translate & Run". Results will be displayed in a table.
+* **Run SQL Query**: Write your `SELECT` query in the text field and click "Run SQL".
+* **Database Schema**: Click "Show Schema" to view the database tables and columns.
+* **Add Data**: Enter the data for a new movie in the specified format and click "Add to Database".
 
-  * **Cerca con Linguaggio Naturale**: Inserisci la tua domanda in italiano e clicca su "Traduci ed Esegui". I risultati verranno visualizzati in una tabella.
-  * **Esegui Query SQL**: Scrivi la tua query `SELECT` nel campo di testo e clicca su "Esegui SQL".
-  * **Schema del Database**: Clicca su "Mostra Schema" per vedere le tabelle e le colonne del database.
-  * **Aggiungi Dati**: Inserisci i dati di un nuovo film nel formato specificato e clicca su "Aggiungi al Database".
-
-## Struttura del Progetto
+## Project Structure
 
 ```
 .
@@ -90,27 +88,27 @@ L'interfaccia web è suddivisa in diverse sezioni:
 └── docker-compose.yaml
 ```
 
-  * `backend/`: Contiene il codice sorgente del servizio di backend FastAPI.
-  * `frontend/`: Contiene il codice sorgente del servizio di frontend.
-  * `mariadb/mariadb_init/`: Contiene lo script SQL per l'inizializzazione del database.
-  * `ollama/`: Contiene il Dockerfile per creare l'immagine personalizzata di Ollama.
-  * `docker-compose.yaml`: Definisce e orchestra tutti i servizi dell'applicazione.
+* `backend/`: Contains the source code for the FastAPI backend service.
+* `frontend/`: Contains the source code for the frontend service.
+* `mariadb/mariadb_init/`: Contains the SQL script for database initialization.
+* `ollama/`: Contains the Dockerfile for building the custom Ollama image.
+* `docker-compose.yaml`: Defines and orchestrates all application services.
 
-## Endpoint dell'API Backend
+## Backend API Endpoints
 
-Il servizio di backend, in esecuzione su `http://localhost:8003` (all'interno della rete Docker), espone i seguenti endpoint principali:
+The backend service, running on `http://localhost:8003` (within the Docker network), exposes the following main endpoints:
 
-  * `GET /schema_summary`: Restituisce lo schema del database.
-  * `POST /add`: Aggiunge nuovi dati al database.
-  * `POST /sql_search`: Esegue una query SQL diretta.
-  * `POST /search`: Traduce una domanda in linguaggio naturale in SQL e la esegue.
+* `GET /schema_summary`: Returns the database schema.
+* `POST /add`: Adds new data to the database.
+* `POST /sql_search`: Executes a direct SQL query.
+* `POST /search`: Translates a natural language question into SQL and executes it.
 
-## Test
+## Testing
 
-Per eseguire i test automatici per il servizio di backend, puoi usare il servizio `tester` definito in `docker-compose.yaml`:
+To run the automated tests for the backend service, you can use the `tester` service defined in `docker-compose.yaml`:
 
 ```bash
 docker-compose up tester
 ```
 
-Questo comando avvierà un container che eseguirà i test con `pytest`.
+This command will start a container that runs the tests with `pytest`.
