@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NT-To-SQL Workspace</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+    <div class="workspace-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>NT-To-SQL</h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#view-search" class="nav-item active" data-view="view-search">Search</a>
+                <a href="#view-sql" class="nav-item" data-view="view-sql">SQL Query</a>
+                <a href="#view-add" class="nav-item" data-view="view-add">Insert Data</a>
+                <a href="#view-schema" class="nav-item" data-view="view-schema">Schema</a>
+            </nav>
+            
+            <!-- Stylish Separator -->
+            <div style="width: 70%; height: 1px; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent); margin: auto auto 0 auto;"></div>
+
+            <!-- AeSoul Signature -->
+            <a href="https://aesoul0.com" target="_blank" rel="noopener noreferrer" style="padding: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.85rem; color: var(--text-secondary); opacity: 0.75; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); text-decoration: none; cursor: pointer; -webkit-font-smoothing: antialiased; will-change: transform, opacity, filter;" onmouseover="this.style.opacity='1'; this.style.transform='translateY(-2px)'; this.style.filter='drop-shadow(0 0 12px rgba(99,102,241,0.5))'" onmouseout="this.style.opacity='0.75'; this.style.transform='translateY(0)'; this.style.filter='drop-shadow(0 0 0 rgba(99,102,241,0))'">
+                <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1;">
+                    <span style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.3em; color: rgba(255,255,255,0.9);">ÆSOUL</span>
+                    <span style="margin-top: 0.45rem; font-size: 0.55rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.28em; color: var(--text-secondary);">Digital Systems</span>
+                </div>
+                <div style="height: 2.2rem; width: 1.5px; background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.2) 20%, rgba(99, 102, 241, 0.9) 50%, rgba(99, 102, 241, 0.2) 80%, transparent 100%); border-radius: 2px;"></div>
+                <span style="color: rgba(99, 102, 241, 0.85); font-size: 1.2rem; font-weight: 300; font-family: var(--font-sans); transform: translateY(2px);">Æ</span>
+            </a>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Global Error -->
+            {% if error %}
+            <div class="toast error-toast">
+                <div class="toast-body">
+                    <strong>Error:</strong> {{ error }}
+                </div>
+                {% if error_detail %}
+                <details class="toast-details">
+                    <summary>Details</summary>
+                    <pre>{{ error_detail | tojson(indent=2) }}</pre>
+                </details>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- View: Search -->
+            <section id="view-search" class="view-section active">
+                <header class="view-header">
+                    <h1>Natural Language Search</h1>
+                    <p class="subtitle">Convert natural language questions into SQL queries</p>
+                </header>
+                <div class="card">
+                    <form action="/" method="post" class="async-form" id="search-form">
+                        <input type="hidden" name="action" value="search">
+                        <div class="form-group">
+                            <label for="question">Your Question:</label>
+                            <div class="input-with-shortcuts">
+                                <input type="text" id="question" name="question" required class="input-field" placeholder="e.g. Find all Christopher Nolan movies">
+                                <div class="shortcuts">
+                                    <button type="button" class="shortcut-btn" data-input="question" data-val="Movies by Christopher Nolan">Nolan Movies</button>
+                                    <button type="button" class="shortcut-btn" data-input="question" data-val="Sci-Fi movies from 2014">Sci-Fi in 2014</button>
+                                    <button type="button" class="shortcut-btn" data-input="question" data-val="All movies on Netflix">Netflix Movies</button>
+                                    <button type="button" class="shortcut-btn" data-input="question" data-val="Count of movies by director">Count by Director</button>
+                                    <button type="button" class="shortcut-btn" data-input="question" data-val="Crime movies before 2000">Classic Crime</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn primary-btn">
+                            <span class="btn-text">Generate & Execute</span>
+                            <span class="spinner" style="display:none;"></span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- View: SQL Query -->
+            <section id="view-sql" class="view-section">
+                <header class="view-header">
+                    <h1>Direct SQL Query</h1>
+                    <p class="subtitle">Execute raw SELECT queries against the database</p>
+                </header>
+                <div class="card">
+                    <form action="/" method="post" class="async-form" id="sql-form">
+                        <input type="hidden" name="action" value="sql_search">
+                        <div class="form-group">
+                            <label for="sql_query">SQL Query (SELECT only):</label>
+                            <textarea id="sql_query" name="sql_query" rows="5" required class="input-field code-input" placeholder="SELECT * FROM film LIMIT 10;"></textarea>
+                        </div>
+                        <button type="submit" class="btn primary-btn">
+                            <span class="btn-text">Execute Query</span>
+                            <span class="spinner" style="display:none;"></span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- View: Insert Data -->
+            <section id="view-add" class="view-section">
+                <header class="view-header">
+                    <h1>Insert Data</h1>
+                    <p class="subtitle">Add a new movie record to the database</p>
+                </header>
+                <div class="card">
+                    <form action="/" method="post" id="add-form" class="async-form">
+                        <input type="hidden" name="action" value="add">
+                        <!-- We still submit data_line or data_json as expected by the backend -->
+                        <input type="hidden" id="data_line_hidden" name="data_line" value="">
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="field_title">Title:</label>
+                                <input type="text" id="field_title" required class="input-field" placeholder="e.g. Inception">
+                            </div>
+                            <div class="form-group">
+                                <label for="field_director">Director Name:</label>
+                                <input type="text" id="field_director" required class="input-field" placeholder="e.g. Christopher Nolan">
+                            </div>
+                            <div class="form-group">
+                                <label for="field_age">Director Age:</label>
+                                <input type="number" id="field_age" required class="input-field" placeholder="e.g. 54">
+                            </div>
+                            <div class="form-group">
+                                <label for="field_year">Release Year:</label>
+                                <input type="number" id="field_year" required class="input-field" placeholder="e.g. 2010">
+                            </div>
+                            <div class="form-group">
+                                <label for="field_genre">Genre:</label>
+                                <input type="text" id="field_genre" required class="input-field" placeholder="e.g. Sci-Fi">
+                            </div>
+                            <div class="form-group">
+                                <label for="field_platforms">Platforms (comma separated):</label>
+                                <input type="text" id="field_platforms" class="input-field" placeholder="e.g. Netflix, Prime Video">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn primary-btn mt-4">
+                            <span class="btn-text">Insert Record</span>
+                            <span class="spinner" style="display:none;"></span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Insertion Log -->
+                {% if action == 'add' %}
+                    {% if message %}
+                    <div class="card mt-4" style="background-color: rgba(46, 204, 113, 0.1); border-left: 4px solid #2ecc71;">
+                        <strong style="color: #2ecc71;">Successfully inserted:</strong> <span style="color: #e2e8f0;">{{ message }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if error %}
+                    <div class="card mt-4" style="background-color: rgba(231, 76, 60, 0.1); border-left: 4px solid #e74c3c;">
+                        <strong style="color: #e74c3c;">Failed:</strong> <span style="color: #e2e8f0;">{{ error }}</span>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </section>
+
+            <!-- View: Schema -->
+            <section id="view-schema" class="view-section">
+                <header class="view-header">
+                    <h1>Database Schema</h1>
+                    <p class="subtitle">Explore tables and columns</p>
+                </header>
+                <div class="card">
+                    <form action="/" method="post">
+                        <input type="hidden" name="action" value="schema_summary">
+                        <button type="submit" class="btn secondary-btn">Load Schema</button>
+                    </form>
+                </div>
+
+                {% if schema %}
+                <div class="card schema-card mt-4">
+                    <div class="schema-filter">
+                        <input type="text" id="schema-filter-input" placeholder="Filter tables or columns..." class="input-field">
+                    </div>
+                    <div class="schema-list">
+                        <table class="data-table" id="schema-table">
+                            <thead>
+                                <tr>
+                                    <th>Table</th>
+                                    <th>Column</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in schema %}
+                                <tr>
+                                    <td><span class="badge">{{ item.table_name }}</span></td>
+                                    <td><code>{{ item.table_column }}</code></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- Results Area -->
+            {% if sql or results is not none %}
+            <div class="results-area mt-6">
+                <h2 class="section-title">Output</h2>
+                
+                {% if question %}
+                <div class="card mb-4" style="margin-bottom: 1rem;">
+                    <strong>Question:</strong> <span>{{ question }}</span>
+                </div>
+                {% endif %}
+                
+                {% if sql %}
+                <div class="card sql-card">
+                    <div class="card-header">
+                        <h3>Executed SQL</h3>
+                        <div class="actions">
+                            {% if sql_validation %}
+                                <span class="badge validation-{{ sql_validation }}">{{ sql_validation }}</span>
+                            {% endif %}
+                            <button class="icon-btn copy-btn" data-copy="{{ sql }}" aria-label="Copy SQL">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <pre class="code-block"><code>{{ sql }}</code></pre>
+                </div>
+                {% endif %}
+
+                {% if results is not none %}
+                <div class="card results-card mt-4">
+                    <div class="card-header">
+                        <h3>Results <span class="badge">{{ results|length }} rows</span></h3>
+                        <div class="view-switcher" style="display: flex; gap: 0.5rem; align-items: center;">
+                            <button class="icon-btn copy-results-btn" aria-label="Copy Results" title="Copy Results">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                            <button class="switcher-btn active" data-target="results-table">Table</button>
+                            <button class="switcher-btn" data-target="results-json">JSON</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-content">
+                        <div id="results-table" class="view-pane active">
+                            {% if results|length > 0 %}
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            {% for prop in results[0].properties %}
+                                            <th>{{ prop.property_name }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in results %}
+                                        <tr>
+                                            <td><span class="badge badge-dim">{{ row.item_type }}</span></td>
+                                            {% for prop in row.properties %}
+                                            <td>{{ prop.property_value }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="empty-state">No results found.</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div id="results-json" class="view-pane">
+                            <pre class="code-block"><code>{{ results | tojson(indent=2) }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+        </main>
+    </div>
+    <script src="{{ url_for('static', path='app.js') }}"></script>
+</body>
+</html>

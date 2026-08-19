@@ -2,9 +2,7 @@
 
 import mariadb
 from fastapi import HTTPException
-from . import models
-# Importa l'oggetto delle impostazioni invece di 'os'
-from .config import settings 
+from ..core.config import settings 
 
 def get_db_connection():
     """

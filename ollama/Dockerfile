@@ -38,7 +38,7 @@ RUN echo "DEBUG 5: Final entrypoint permissions:" && \
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s \
     CMD curl -f http://localhost:11434 || exit 1
 
-COPY scripts/fix-permissions.sh /fix-permissions.sh
-RUN chmod +x /fix-permissions.sh
+COPY scripts/fix_permission.sh /fix_permission.sh
+RUN dos2unix /fix_permission.sh && chmod +x /fix_permission.sh
 
-ENTRYPOINT ["/fix-permissions.sh && /entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "-c", "/fix_permission.sh && /entrypoint.sh"]

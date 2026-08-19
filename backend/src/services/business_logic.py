@@ -1,8 +1,8 @@
-# Importa i moduli necessari, inclusi il driver del database e i modelli Pydantic.
 import mariadb
+import datetime
 from fastapi import HTTPException
-from . import database
-from . import models
+from ..db import database
+from ..schemas import models
 from typing import List
 
 def is_safe_select(query: str) -> bool:
@@ -16,30 +16,34 @@ def is_safe_select(query: str) -> bool:
     # La query deve iniziare con 'select' e non deve contenere nessuna delle parole chiave vietate.
     return query_lower.startswith("select") and not any(keyword in query_lower for keyword in unsafe_keywords)
 
-def process_sql_query(query: str) -> models.SearchResponse:
+def process_sql_query(query: str, conn: mariadb.Connection, question: str = None) -> models.SearchResponse:
     """
     Servizio centralizzato per l'esecuzione di query SQL.
     Valida la query, la esegue e formatta la risposta per il frontend.
     """
     # Primo controllo di sicurezza.
     if not is_safe_select(query):
-        return models.SearchResponse(sql=query, sql_validation="unsafe", results=None)
+        return models.SearchResponse(sql=query, sql_validation="unsafe", results=None, question=question)
     
-    conn = database.get_db_connection()
     try:
-        # Esegue la query tramite il modulo 'database'.
-        results = database.execute_sql_query(query, conn)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        cursor.close()
+        
+        results = []
+        for row in rows:
+            props = [models.ItemProperty(property_name=k, property_value=v) for k, v in row.items()]
+            results.append(models.ResultItem(item_type="Record", properties=props))
+            
         validation = "valid"
     except mariadb.Error as e:
         # Se la query ha un errore di sintassi, lo gestisce.
         print(f"Errore di sintassi SQL: {e}")
         results = None
         validation = "invalid"
-    finally:
-        # La connessione al database viene sempre chiusa, anche in caso di errore.
-        conn.close()
     
-    return models.SearchResponse(sql=query, sql_validation=validation, results=results)
+    return models.SearchResponse(sql=query, sql_validation=validation, results=results, question=question)
 
 # CORRETTO in services.py
 

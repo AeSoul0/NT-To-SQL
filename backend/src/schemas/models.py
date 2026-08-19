@@ -33,6 +33,7 @@ class SearchResponse(BaseModel):
     sql_validation: Literal["valid", "invalid", "unsafe"]
     # La lista dei risultati, che può essere assente (Optional).
     results: Optional[List[ResultItem]]
+    question: Optional[str] = None
 
 # Modello per un item dello schema del database (una coppia tabella-colonna).
 class SchemaItem(BaseModel):
@@ -73,6 +74,7 @@ class SearchResponse(BaseModel):
     sql: str
     sql_validation: Literal["valid", "invalid", "unsafe"]
     results: Optional[List[ResultItem]]
+    question: Optional[str] = None
 
 class SchemaItem(BaseModel):
     table_name: str

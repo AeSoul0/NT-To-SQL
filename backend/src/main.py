@@ -4,14 +4,14 @@ import mariadb
 from typing import List
 import time
 import requests
+import traceback
 
 # Importa i moduli locali usando la notazione relativa (con il punto),
 # che è essenziale per il corretto funzionamento dei package Python.
-from . import models
-from . import services
-from . import database
-from .text_to_sql import translator
-from .text_to_sql import generate_sql_from_question
+from .schemas import models
+from .services import business_logic as services
+from .db import database
+from .ai import translator
 
 # Inizializza l'applicazione FastAPI.
 app = FastAPI(
@@ -97,7 +97,7 @@ def search(request: models.SearchRequest, conn: mariadb.Connection = DbConnectio
         )
         
         print(f"Generated SQL: {sql_query}")
-        return services.process_sql_query(sql_query, conn)
+        return services.process_sql_query(sql_query, conn, question=request.question)
         
     except Exception as e:
         # Log dettagliato dell'errore
@@ -112,7 +112,7 @@ def search(request: models.SearchRequest, conn: mariadb.Connection = DbConnectio
 @app.on_event("startup")
 async def startup_event():
     """Wait for Ollama service to be ready"""
-    from .config import settings
+    from .core.config import settings
     attempts = 0
     max_attempts = 30
     

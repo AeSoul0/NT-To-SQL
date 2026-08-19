@@ -1,114 +1,143 @@
-# Natural Language to SQL Translator
+# Natural to SQL 🗄️⚡
 
-This project is a full-stack web application that translates natural language questions into SQL queries, allowing users to query a movie database intuitively. The application is built with a microservices architecture, containerized with Docker.
+> **Turn natural language questions into executable MariaDB queries using a local LLM.**
+
+## Overview
+
+**Natural to SQL** is a lightweight, full-stack microservices application that translates human language into valid SQL queries. It bridges the gap between non-technical users and relational databases by utilizing a locally hosted Large Language Model (LLM) to infer and execute SQL statements based strictly on the target database schema and live sample data.
 
 ## Features
 
-* **Natural Language to SQL Translation**: Enter a question in English (e.g., "Show me Christopher Nolan's films") and the application will convert it into an executable SQL query.
-* **Direct SQL Execution**: Run `SELECT` queries directly on the database for testing or advanced analysis.
-* **Schema Visualization**: Inspect the database schema to view available tables and columns.
-* **Data Entry**: Insert new data into the database through a simple form.
-* **Intuitive Web Interface**: A modern, responsive frontend to interact with all features.
+- 🧠 **Natural Language to SQL**: Translates user questions into SQL using a local Ollama instance (tuned for `gemma3:1b-it-qat`).
+- 🛠️ **Data Management**: Insert new records directly from the UI or execute raw SQL queries bypassing the LLM.
+- 📊 **Schema Explorer**: Dynamically view available tables and columns in the database.
+- 🎨 **Modern Developer UI**: A clean, responsive, dark-mode frontend built with FastAPI, Jinja2, and Vanilla JS.
+- 🐳 **Fully Dockerized**: Simple, one-click deployment using Docker Compose.
+- 🧪 **Automated Testing**: Integrated `pytest` suite for backend validation.
 
-## Architecture
+## How It Works
 
-The project uses a microservices architecture, where each component is an independent service running in its own Docker container:
+The system operates on a highly optimized, context-aware translation pipeline:  
+`Natural Language Request → Schema Injection → Local LLM Processing → SQL Execution → Results Presentation`
 
-* **Frontend**: A web application built with FastAPI that serves the HTML, CSS, and JavaScript user interface. It communicates with the backend service via HTTP requests.
-* **Backend**: A FastAPI API that handles the business logic. It receives requests from the frontend, interacts with the database, and communicates with the Ollama service for SQL translation.
-* **Database**: A MariaDB instance that stores the movie data.
-* **Ollama**: A service that runs a large language model (LLM) to translate natural language into SQL.
-* **Tester**: A dedicated service for running automated tests on the backend.
+1. The FastAPI backend retrieves the live MariaDB schema along with sample data rows.
+2. The schema and the user's question are injected into an optimized "Few-Shot" prompt template (acting as semantic building blocks).
+3. The local Ollama LLM translates the context into raw SQL syntax.
+4. The backend executes the generated SQL against MariaDB and passes the structured payload back to the frontend.
 
-## Tech Stack
+## Example
 
-* **Backend**: Python, FastAPI, MariaDB Connector, Pydantic, Poetry
-* **Frontend**: Python, FastAPI, Jinja2, HTML5, CSS3
-* **NLU Translation**: Ollama with the `gemma3:1b-it-qat` model
-* **Database**: MariaDB
-* **Containerization**: Docker, Docker Compose
+**Natural Language Input:**
+> *"show all Nolan movies and give me the exact count"*
 
-## Prerequisites
-
-* [Docker](https://docs.docker.com/get-docker/)
-* [Docker Compose](https://docs.docker.com/compose/install/)
-
-## Installation Guide
-
-1. **Clone the Repository**
-
-   ```bash
-   git clone https://github.com/your-username/final-project.git
-   cd final-project
-   ```
-
-2. **Start the Services with Docker Compose**
-
-   Run the following command from the project root directory:
-
-   ```bash
-   docker-compose up --build
-   ```
-
-   This command will build the Docker images for each service (if they don't already exist) and start all containers. The first startup may take some time, as Ollama will need to download the LLM model.
-
-3. **Access the Application**
-
-   Open your web browser and navigate to `http://localhost:8080`.
-
-## Usage
-
-The web interface is divided into several sections:
-
-* **Search with Natural Language**: Enter your question and click "Translate & Run". Results will be displayed in a table.
-* **Run SQL Query**: Write your `SELECT` query in the text field and click "Run SQL".
-* **Database Schema**: Click "Show Schema" to view the database tables and columns.
-* **Add Data**: Enter the data for a new movie in the specified format and click "Add to Database".
+**Generated SQL Output:**
+```sql
+SELECT m.titolo, m.anno, d.name AS director, COUNT(m.id) OVER() AS total_movies 
+FROM movies m 
+JOIN directors d ON m.director_id = d.id 
+WHERE d.name LIKE '%Nolan%';
+```
 
 ## Project Structure
 
+The repository is organized into distinct domain boundaries and microservices:
+
+```text
+📦 nt-to-sql
+ ┣ 📂 backend                 # Python backend service
+ ┃ ┣ 📂 src
+ ┃ ┃ ┣ 📂 ai                  # LLM integration & prompt templates
+ ┃ ┃ ┣ 📂 core                # Environment configs & settings
+ ┃ ┃ ┣ 📂 db                  # MariaDB connection handlers
+ ┃ ┃ ┣ 📂 schemas             # Pydantic models for request/response
+ ┃ ┃ ┗ 📜 main.py             # FastAPI entry point
+ ┃ ┣ 📜 Dockerfile            # Multi-stage backend build
+ ┃ ┗ 📜 pyproject.toml        # Poetry dependencies
+ ┣ 📂 frontend                # Web UI service
+ ┃ ┣ 📂 src
+ ┃ ┃ ┣ 📂 static              # CSS and Vanilla JS logic
+ ┃ ┃ ┣ 📂 templates           # Jinja2 HTML views (index.html)
+ ┃ ┃ ┗ 📜 main.py             # FastAPI frontend adapter
+ ┃ ┣ 📜 Dockerfile            
+ ┃ ┗ 📜 pyproject.toml        
+ ┣ 📂 mariadb                 # Database initialization
+ ┃ ┗ 📂 mariadb_init          # SQL setup scripts (.sql)
+ ┣ 📂 ollama                  # LLM Engine
+ ┃ ┗ 📜 Dockerfile            # Custom Ollama pull & build logic
+ ┗ 📜 docker-compose.yaml     # Microservices orchestration
 ```
-.
-├── backend/
-│   ├── src/
-│   ├── Dockerfile
-│   └── pyproject.toml
-├── frontend/
-│   ├── src/
-│   ├── static/
-│   ├── templates/
-│   ├── Dockerfile
-│   └── pyproject.toml
-├── mariadb/
-│   └── mariadb_init/
-│       └── init.sql
-├── ollama/
-│   ├── scripts/
-│   └── Dockerfile
-└── docker-compose.yaml
-```
 
-* `backend/`: Contains the source code for the FastAPI backend service.
-* `frontend/`: Contains the source code for the frontend service.
-* `mariadb/mariadb_init/`: Contains the SQL script for database initialization.
-* `ollama/`: Contains the Dockerfile for building the custom Ollama image.
-* `docker-compose.yaml`: Defines and orchestrates all application services.
+## Installation
 
-## Backend API Endpoints
-
-The backend service, running on `http://localhost:8003` (within the Docker network), exposes the following main endpoints:
-
-* `GET /schema_summary`: Returns the database schema.
-* `POST /add`: Adds new data to the database.
-* `POST /sql_search`: Executes a direct SQL query.
-* `POST /search`: Translates a natural language question into SQL and executes it.
-
-## Testing
-
-To run the automated tests for the backend service, you can use the `tester` service defined in `docker-compose.yaml`:
+Ensure you have [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed on your machine.
 
 ```bash
-docker-compose up tester
+# Clone the repository
+git clone https://github.com/AeSoul0/NT-To-SQL.git
+cd nt-to-sql
+
+# Build and start all microservices in detached mode
+docker-compose up --build -d
 ```
 
-This command will start a container that runs the tests with `pytest`.
+*Note: The initial build will download the MariaDB image, build the Python environments, and set up the local Ollama container.*
+
+## Usage
+
+Once the containers are running, access the web interface at:  
+👉 **`http://localhost:8080`**
+
+From the interface, you can:
+- Use the **Search** tab to type questions in natural language.
+- Use the **SQL Query** tab to test manual `SELECT` statements.
+- Use the **Insert Data** tab to add new records to the database.
+- Use the **Schema** tab to inspect the current database structure.
+
+## Configuration
+
+Environment variables are managed within the `docker-compose.yaml` file. Key configurations include:
+
+- `MARIADB_ROOT_PASSWORD`
+- `MARIADB_DATABASE`
+- `MARIADB_USER`
+- `MARIADB_PASSWORD`
+- `OLLAMA_HOST` (Defaults to the internal `ollama` container)
+
+## Architecture
+
+The project is divided into distinct microservices:
+
+```mermaid
+graph TD
+    User([User Browser]) -->|HTTP 8080| Frontend[Frontend Service<br/>FastAPI/Jinja2]
+    Frontend -->|HTTP 8003| Backend[Backend Service<br/>FastAPI]
+    Backend -->|Port 11434| Ollama[Ollama Service<br/>Local LLM]
+    Backend -->|Port 3306| MariaDB[(MariaDB)]
+    
+    Ollama -.->|Returns Raw SQL| Backend
+    MariaDB -.->|Returns Result Rows| Backend
+```
+
+## Workflow Example
+
+1. **User Request**: User clicks the shortcut *"Sci-Fi in 2014"*.
+2. **SQL Generation**: The backend prompts Ollama with the DB schema, sample rows, and the request.
+3. **Execution**: Ollama returns `SELECT ... WHERE m.genere LIKE '%sci-fi%' AND m.anno = 2014`.
+4. **Validation & Presentation**: The backend runs the query on MariaDB and the frontend renders the results as an interactive HTML table or raw JSON.
+
+## Limitations
+
+- **Small Model Constraints**: The system currently relies on a lightweight `1B` parameter model. To prevent hallucinations, it heavily utilizes explicit few-shot pattern matching. Complex, novel queries drastically outside the provided prompt examples may fail.
+- **Read-Only LLM Pipeline**: The natural language translation is strictly designed for `SELECT` queries. Data insertion relies on explicit REST API endpoints rather than LLM inference for safety.
+
+## Roadmap
+
+- [x] Migrate to a modern, dark-mode developer UI with async form handling.
+- [x] Inject live sample data into the LLM prompt for better semantic matching.
+- [x] Add "copy to clipboard" functionality for JSON and TSV table results.
+- [ ] Implement query sanitization and sandboxing before execution.
+- [ ] Support dynamic LLM switching (e.g., swapping to a 7B parameter model) directly from the UI.
+
+## License
+
+© 2026 All Rights Reserved to **[AeSoul0](https://github.com/AeSoul0)**.

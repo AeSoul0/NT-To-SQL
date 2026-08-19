@@ -3,7 +3,7 @@
 # Importa il modulo pytest, lo standard de-facto per il testing in Python.
 import pytest
 # Importa il modulo 'services' dall'applicazione per poter testare le sue funzioni.
-from src import services
+from src.services import business_logic as services
 
 # --- Test per la funzione di validazione SQL: is_safe_select ---
 # Questi test verificano che la funzione di sicurezza per le query SQL

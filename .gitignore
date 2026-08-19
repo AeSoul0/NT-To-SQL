@@ -83,3 +83,5 @@ docker-compose.override.yml
 .vscode/
 *.swp
 *.swo
+
+roadmap_revamp_ui.md

@@ -6,7 +6,7 @@ from typing import Dict
 
 # Usa un import relativo per trovare i prompt
 from .prompts import SQL_PROMPT_TEMPLATE
-from ..config import settings
+from ..core.config import settings
 from tenacity import retry, stop_after_attempt, wait_fixed
 import json
 from json import JSONDecodeError
@@ -30,21 +30,38 @@ def _get_db_schema_prompt_str() -> str:
     """Recupera dinamicamente lo schema del DB."""
     conn = _get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    prompt_lines = ["### Schema del database MariaDB:"]
+    prompt_lines = ["### MariaDB Database Schema:"]
     
     cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()")
     tables = cursor.fetchall()
 
     for table in tables:
         table_name = table['table_name']
-        prompt_lines.append(f"Tabella `{table_name}` con colonne:")
+        prompt_lines.append(f"\nTable `{table_name}` with columns:")
         cursor.execute(f"SHOW COLUMNS FROM {table_name}")
         columns = cursor.fetchall()
         for col in columns:
-            prompt_lines.append(f" - `{col['Field']}` (tipo: {col['Type']})")
+            prompt_lines.append(f" - `{col['Field']}` (type: {col['Type']})")
+            
+        try:
+            cursor.execute(f"SELECT * FROM {table_name} LIMIT 3")
+            samples = cursor.fetchall()
+            if samples:
+                prompt_lines.append(f" Sample data in `{table_name}`:")
+                for sample in samples:
+                    sample_str = ", ".join([f"{k}='{v}'" for k, v in sample.items() if v is not None])
+                    prompt_lines.append(f"  - {sample_str}")
+        except mariadb.Error:
+            pass
             
     cursor.close()
     conn.close()
+    
+    prompt_lines.append("\n### Relationships (Correct JOINs):")
+    prompt_lines.append("- directors.id = movies.director_id")
+    prompt_lines.append("- movies.id = movie_platforms.movie_id")
+    prompt_lines.append("- platforms.id = movie_platforms.platform_id")
+    
     return "\n".join(prompt_lines)
 
 
@@ -56,7 +73,7 @@ def _get_db_schema_prompt_str() -> str:
 )
 def _call_ollama(model: str, prompt: str) -> str:
     try:
-        ollama_url = f"http://{settings.OLLAMA_HOST}:11434/api/generate"
+        ollama_url = settings.OLLAMA_API_URL
         
         response = requests.post(
             ollama_url,
