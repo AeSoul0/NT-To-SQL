@@ -2,7 +2,6 @@
 
 > **Turn natural language questions into executable MariaDB queries using a local LLM.**
 >
-[![CI](https://img.shields.io/github/actions/workflow/status/AeSoul0/NT-To-SQL/ci.yml?branch=main&label=CI&logo=github&logoColor=white)](https://github.com/AeSoul0/NT-To-SQL/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.x-009688?logo=fastapi&logoColor=white)
 ![MariaDB](https://img.shields.io/badge/MariaDB-11.x-003545?logo=mariadb&logoColor=white)
