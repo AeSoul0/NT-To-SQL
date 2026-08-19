@@ -1,6 +1,13 @@
 # Natural to SQL 🗄️⚡
 
 > **Turn natural language questions into executable MariaDB queries using a local LLM.**
+>
+> [![CI](https://github.com/AeSoul0/NT-To-SQL/actions/workflows/ci.yml/badge.svg)](https://github.com/AeSoul0/NT-To-SQL/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.x-009688?logo=fastapi&logoColor=white)
+![MariaDB](https://img.shields.io/badge/MariaDB-11.x-003545?logo=mariadb&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-000000?logo=ollama&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
 ## Overview
 
